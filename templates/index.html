@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>判决书检索工具</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bootstrap/icons/bootstrap-icons.css">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
+    <link rel="icon" href="/static/favicon/favicon.ico">
+    <link rel="manifest" href="/static/favicon/site.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+</head>
+<body>
+    <div class="container">
+        <header class="py-3 d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">判决书检索工具</h2>
+            <div class="text-muted small">技术支持：许木只</div>
+        </header>
+
+        <div class="search-container mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="mainSearch" class="form-label">主搜索</label>
+                    <input type="text" id="mainSearch" class="form-control" placeholder="输入关键词，多个关键词用空格分隔">
+                </div>
+                <div class="col-md-6">
+                    <label for="excludeSearch" class="form-label">排除搜索</label>
+                    <input type="text" id="excludeSearch" class="form-control" placeholder="输入要排除的关键词，多个关键词用空格分隔">
+                </div>
+            </div>
+
+            <div class="row g-3 mt-2">
+                <div class="col-md-3">
+                    <label for="searchType" class="form-label">搜索范围</label>
+                    <select id="searchType" class="form-select">
+                        <option value="content" selected>内容</option>
+                        <option value="title">标题</option>
+                        <option value="all">全部</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="docType" class="form-label">案件类型</label>
+                    <select id="docType" class="form-select">
+                        <option value="全部" selected>全部</option>
+                        <option value="刑事">刑事</option>
+                        <option value="民事">民事</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="source" class="form-label">数据来源</label>
+                    <select id="source" class="form-select">
+                        <option value="全部" selected>全部</option>
+                        <option value="台州中院 2020 前">台州中院 2020 前</option>
+                        <option value="温岭法院 2020 前">温岭法院 2020 前</option>
+                        <option value="已导入数据">已导入数据</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-upload"></i> 导入
+                    </button>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button id="searchBtn" class="btn btn-primary w-100">搜索</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="results-container">
+            <h3>搜索结果 <span id="resultCount" class="badge bg-secondary">0</span></h3>
+            <div id="searchResults" class="list-group mb-4"></div>
+        </div>
+
+        <!-- 导入判决书模态框 -->
+        <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="uploadModalLabel">导入判决书</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="folderInput" class="form-label">选择文件夹（文件夹下的所有doc和docx文件会被导入）</label>
+                                <input class="form-control" type="file" id="folderInput" webkitdirectory directory multiple>
+                                <div class="form-text">文件夹中仅有 .doc 和 .docx 格式文件会被导入</div>
+                            </div>
+                            <div class="mb-3" id="selectedFilesInfo">
+                                <p><strong>选中文件:</strong> <span id="fileCount">0</span> 个文件</p>
+                                <p>有效文件: <span id="validFileCount">0</span> 个 (.doc/.docx)</p>
+                                <div class="progress" style="display:none;">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                </div>
+                            </div>
+                            <div id="uploadStatus" class="mt-2"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="clearDbBtn">清空自定义数据库</button>
+                        <div class="ms-auto">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-success" id="uploadBtn">上传</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Preview Modal -->
+        <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="documentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="documentModalLabel">判决书预览</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h4 id="docTitle"></h4>
+                        <div class="mb-2">
+                            <span class="badge bg-info me-2" id="docSource"></span>
+                            <span class="badge bg-secondary" id="docType"></span>
+                        </div>
+                        <div id="docContent" class="document-content"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
