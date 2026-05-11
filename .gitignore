@@ -23,6 +23,7 @@ uploads/
 *.log
 tz-2020.db
 wl-2020.db
+pjs_data/
 
 # Run_modules
 node_modules
