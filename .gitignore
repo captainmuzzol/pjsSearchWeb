@@ -24,6 +24,8 @@ uploads/
 tz-2020.db
 wl-2020.db
 pjs_data/
+_offline/
+_offine/
 
 # Run_modules
 node_modules
