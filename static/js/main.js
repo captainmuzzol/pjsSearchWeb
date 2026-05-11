@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('uploadForm');
     const fileInput = document.getElementById('fileInput');
     const uploadStatus = document.getElementById('uploadStatus');
-    
+
     // Document Modal Elements
     const documentModalEl = document.getElementById('documentModal');
     const documentModal = new bootstrap.Modal(documentModalEl);
-    
+
     // 当模态框隐藏时触发事件
     documentModalEl.addEventListener('hidden.bs.modal', function() {
         // 确保关闭模态框后不影响页面其他元素
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 { value: '刑事', text: '刑事' },
                 { value: '民事', text: '民事' }
             ];
-            
+
             options.forEach(opt => {
                 const option = document.createElement('option');
                 option.value = opt.value;
@@ -52,7 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const docSource = document.getElementById('docSource');
     const docType = document.getElementById('docType');
     const docContent = document.getElementById('docContent');
-    
+
+    // 页面加载时从后端获取数据库列表，动态填充数据来源选项
+    fetch('/api/databases')
+        .then(response => response.json())
+        .then(databases => {
+            databases.forEach(dbName => {
+                const option = document.createElement('option');
+                option.value = dbName;
+                option.textContent = dbName;
+                sourceSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('获取数据库列表失败:', error);
+        });
+
     // Event Listeners
     searchBtn.addEventListener('click', performSearch);
     mainSearchInput.addEventListener('keypress', function(e) {
